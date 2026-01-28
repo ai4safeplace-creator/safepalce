@@ -1,7 +1,7 @@
 "use client";
 
-import { ArrowRight, Mic, Calendar, FileText, ChevronLeft } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowRight, Mic, Calendar, FileText, ChevronLeft, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -15,6 +15,7 @@ export default function PatientDetail() {
     const [patient, setPatient] = useState<Patient | null>(null);
     const [sessions, setSessions] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedSession, setSelectedSession] = useState<any | null>(null);
 
     useEffect(() => {
         if (id) {
@@ -127,17 +128,25 @@ export default function PatientDetail() {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.1 }}
+                                onClick={() => setSelectedSession(session)}
                                 className="bg-[var(--surface)] border border-[var(--surface-variant)] p-4 rounded-2xl flex items-center justify-between hover:border-[var(--primary)] transition-all cursor-pointer group"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 bg-[var(--surface-variant)] rounded-xl flex items-center justify-center text-[var(--primary)]">
                                         <Calendar size={18} />
                                     </div>
-                                    <div>
+                                    <div className="flex-1">
                                         <h3 className="font-bold">מפגש מיום {new Date(session.session_date).toLocaleDateString('he-IL')}</h3>
-                                        <p className="text-xs text-[var(--secondary)]">
-                                            {new Date(session.session_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
+                                        <div className="flex gap-4">
+                                            <p className="text-xs text-[var(--secondary)]">
+                                                {new Date(session.session_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                            {session.summaries?.[0]?.summary_text && (
+                                                <p className="text-xs text-[var(--primary)] font-medium line-clamp-1 max-w-[300px]">
+                                                    {session.summaries[0].summary_text.substring(0, 50)}...
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 text-[var(--primary)] opacity-0 group-hover:opacity-100 transition-opacity">
@@ -152,6 +161,57 @@ export default function PatientDetail() {
                             </div>
                         )}
                     </div>
+
+                    {/* Session Detail Modal */}
+                    <AnimatePresence>
+                        {selectedSession && (
+                            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    onClick={() => setSelectedSession(null)}
+                                    className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                                />
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                                    className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                                >
+                                    <div className="p-6 border-b border-[var(--surface-variant)] flex justify-between items-center bg-[var(--primary-container)]/10">
+                                        <div>
+                                            <h3 className="text-xl font-bold text-[var(--primary)]">סיכום מפגש</h3>
+                                            <p className="text-sm text-[var(--secondary)]">
+                                                {new Date(selectedSession.session_date).toLocaleDateString('he-IL')} | {new Date(selectedSession.session_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => setSelectedSession(null)}
+                                            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white transition-colors"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    <div className="p-8 overflow-y-auto">
+                                        <div className="prose prose-purple max-w-none">
+                                            <div className="whitespace-pre-wrap text-lg leading-relaxed text-[var(--secondary)]">
+                                                {selectedSession.summaries?.[0]?.summary_text || "אין סיכום זמין למפגש זה."}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-6 border-t border-[var(--surface-variant)] flex justify-end">
+                                        <button
+                                            onClick={() => setSelectedSession(null)}
+                                            className="px-6 py-2 rounded-xl bg-[var(--primary)] text-white font-bold hover:opacity-90 transition-opacity shadow-md"
+                                        >
+                                            סגור
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        )}
+                    </AnimatePresence>
                 </section>
             </main>
         </div>

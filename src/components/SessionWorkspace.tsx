@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileText, Sparkles, Save, Edit3, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -14,6 +14,13 @@ interface SessionWorkspaceProps {
 export default function SessionWorkspace({ transcript, summary: initialSummary, onSave, isLoading }: SessionWorkspaceProps) {
     const [editedSummary, setEditedSummary] = useState(initialSummary);
     const [isEditing, setIsEditing] = useState(false);
+
+    // Sync state with incoming summary from parent (once AI finishes)
+    useEffect(() => {
+        if (initialSummary) {
+            setEditedSummary(initialSummary);
+        }
+    }, [initialSummary]);
 
     return (
         <div className="flex flex-col lg:flex-row gap-8 w-full max-w-6xl mx-auto p-4">

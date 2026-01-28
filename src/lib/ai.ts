@@ -6,25 +6,32 @@ export interface AIResponse {
 }
 
 export async function transcribeAudio(audioBlob: Blob): Promise<AIResponse> {
-    const formData = new FormData();
-    formData.append('file', audioBlob, 'recording.wav');
-    formData.append('model', 'openai/whisper-1');
-
     try {
-        const response = await fetch(`${OPENROUTER_URL}/audio/transcriptions`, {
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'recording.wav');
+        formData.append('model', 'whisper-1');
+        formData.append('language', 'he');
+
+        const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`,
+                'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
             },
             body: formData,
         });
 
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`OpenAI Error (${response.status}): ${errorText}`);
+        }
+
         const data = await response.json();
-        if (data.error) throw new Error(data.error.message || 'תמלול נכשל');
+        if (!data.text) throw new Error("לא התקבל תמלול מהשרת");
+
         return { text: data.text };
     } catch (error: any) {
         console.error("Transcription error:", error);
-        return { text: '', error: "שגיאה בתמלול האודיו. אנא וודאי שקוד ה-API תקין." };
+        return { text: '', error: `שגיאה בתמלול: ${error.message}` };
     }
 }
 
@@ -57,12 +64,12 @@ export async function generateSummary(transcript: string): Promise<AIResponse> {
                 'X-Title': 'MeytaLog',
             },
             body: JSON.stringify({
-                model: 'openai/gpt-4o',
+                model: 'google/gemini-2.0-flash-001',
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: transcript },
                 ],
-                temperature: 0.3, // Lower temperature for more consistent clinical summaries
+                temperature: 0.3,
             }),
         });
 

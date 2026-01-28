@@ -36,9 +36,9 @@ export default function SessionFlow({ patientId, onComplete, onCancel }: Session
             const summaryRes = await generateSummary(transcriptRes.text);
             if (summaryRes.error) throw new Error(summaryRes.error);
             setSummary(summaryRes.text);
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("שגיאה בעיבוד המידע. אנא בדקי את החיבור והנסחי שנית.");
+            alert(`שגיאה בעיבוד המידע: ${err.message || "בדקי את החיבור"}`);
             setStep('recording');
         } finally {
             setIsLoading(false);
@@ -49,9 +49,14 @@ export default function SessionFlow({ patientId, onComplete, onCancel }: Session
         setIsLoading(true);
         try {
             // Save to Supabase
+            const { data: { user } } = await supabase.auth.getUser();
             const { data: sessionData, error: sessionError } = await supabase
                 .from('sessions')
-                .insert([{ patient_id: patientId, session_date: new Date().toISOString() }])
+                .insert([{
+                    patient_id: patientId,
+                    therapist_id: user?.id,
+                    session_date: new Date().toISOString()
+                }])
                 .select()
                 .single();
 
