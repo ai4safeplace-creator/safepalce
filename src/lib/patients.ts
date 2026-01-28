@@ -45,3 +45,55 @@ export async function createPatient(patient: Omit<Patient, 'id' | 'created_at'>)
     }
     return data[0] as Patient;
 }
+
+export async function updatePatient(id: string, updates: Partial<Omit<Patient, 'id' | 'created_at'>>) {
+    const { data, error } = await supabase
+        .from('patients')
+        .update(updates)
+        .eq('id', id)
+        .select();
+
+    if (error) throw error;
+    return data[0] as Patient;
+}
+
+export async function deletePatient(id: string) {
+    const { error } = await supabase
+        .from('patients')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+}
+
+export async function updateSummary(sessionId: string, summaryText: string) {
+    // Attempt to update the existing summary for this session
+    const { data, error } = await supabase
+        .from('summaries')
+        .update({ summary_text: summaryText })
+        .eq('session_id', sessionId)
+        .select();
+
+    if (error) throw error;
+
+    // If no summary existed (unlikely but possible), insert one
+    if (data.length === 0) {
+        const { data: newData, error: insertError } = await supabase
+            .from('summaries')
+            .insert([{ session_id: sessionId, summary_text: summaryText }])
+            .select();
+        if (insertError) throw insertError;
+        return newData[0];
+    }
+
+    return data[0];
+}
+
+export async function deleteSession(id: string) {
+    const { error } = await supabase
+        .from('sessions')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+}

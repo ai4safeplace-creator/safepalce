@@ -77,33 +77,56 @@ export default function SessionFlow({ patientId, onComplete, onCancel }: Session
     };
 
     return (
-        <div className="fixed inset-0 bg-white/80 backdrop-blur-xl z-50 flex flex-col overflow-y-auto">
-            <div className="p-6">
+        <div className="fixed inset-0 bg-slate-50/95 backdrop-blur-xl z-[60] flex flex-col overflow-hidden">
+            <header className="p-4 md:p-6 border-b border-slate-200 bg-white/50 sticky top-0 z-10">
+                <div className="max-w-6xl mx-auto flex justify-between items-center">
+                    <h2 className="text-xl md:text-2xl font-bold text-[var(--primary)]">תהליך מפגש חכם</h2>
+                    <button
+                        onClick={onCancel}
+                        className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-[var(--secondary)]"
+                    >
+                        {step === 'recording' ? 'ביטול' : 'סגור'}
+                    </button>
+                </div>
+            </header>
+
+            <div className="flex-1 overflow-y-auto w-full">
                 <AnimatePresence mode="wait">
                     {step === 'recording' && (
                         <motion.div
                             key="recording"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.1 }}
-                            className="mt-20"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="h-full flex items-center justify-center p-4 md:p-0"
                         >
-                            <h2 className="text-3xl font-bold text-center mb-12">הקלטת סיכום טיפול</h2>
-                            <Recorder onSave={handleAudioSaved} onCancel={onCancel} />
+                            <div className="w-full max-w-md">
+                                <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 md:mb-12">הקלטת סיכום טיפול</h2>
+                                <Recorder onSave={handleAudioSaved} onCancel={onCancel} />
+                            </div>
                         </motion.div>
                     )}
 
-                    {(step === 'processing' || step === 'workspace') && (
+                    {step === 'processing' && (
+                        <motion.div
+                            key="processing"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="h-full flex flex-col items-center justify-center p-8 text-center"
+                        >
+                            <div className="w-20 h-20 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin mb-6" />
+                            <h2 className="text-2xl font-bold mb-2">מעבד מידע...</h2>
+                            <p className="text-[var(--secondary)]">ה-AI שלנו מתמלל ומנסח סיכום מקצועי בשבילך.</p>
+                        </motion.div>
+                    )}
+
+                    {step === 'workspace' && (
                         <motion.div
                             key="workspace"
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="mt-8"
+                            className="min-h-full py-6 md:py-8"
                         >
-                            <div className="max-w-6xl mx-auto flex justify-between items-center mb-8 px-4">
-                                <h2 className="text-2xl font-bold">סיכום ומסקנות</h2>
-                                <button onClick={onCancel} className="text-[var(--secondary)]">ביטול</button>
-                            </div>
                             <SessionWorkspace
                                 transcript={transcript}
                                 summary={summary}

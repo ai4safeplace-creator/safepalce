@@ -106,45 +106,45 @@ export default function Dashboard() {
     `${p.first_name} ${p.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
   );
   return (
-    <div className="min-h-screen bg-[var(--background)] p-6">
-      <header className="flex justify-between items-center mb-8 bg-[var(--glass)] backdrop-blur-md p-4 rounded-2xl border border-[var(--surface-variant)] shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[var(--primary)] rounded-full flex items-center justify-center text-white font-bold">
+    <div className="min-h-screen bg-[var(--background)] p-4 md:p-6 pb-20">
+      <header className="flex justify-between items-center mb-6 bg-[var(--glass)] backdrop-blur-md p-3 md:p-4 rounded-2xl border border-[var(--surface-variant)] shadow-sm sticky top-4 z-40">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="w-9 h-9 md:w-10 md:h-10 bg-[var(--primary)] rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base">
             M
           </div>
-          <div>
-            <h1 className="text-xl font-bold">MeytaLog</h1>
-            <p className="text-xs text-[var(--secondary)]">שלום, {user?.email || 'אורחת'}</p>
+          <div className="overflow-hidden">
+            <h1 className="text-lg md:text-xl font-bold truncate">MeytaLog</h1>
+            <p className="text-[10px] md:text-xs text-[var(--secondary)] truncate max-w-[120px] md:max-w-none">שלום, {user?.email || 'אורחת'}</p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <button className="p-2.5 hover:bg-[var(--surface-variant)] rounded-2xl transition-all text-[var(--outline)] hover:text-[var(--primary)]">
-            <Settings size={20} />
+        <div className="flex items-center gap-2 md:gap-4">
+          <button className="p-2 md:p-2.5 hover:bg-[var(--surface-variant)] rounded-xl transition-all text-[var(--outline)]">
+            <Settings size={18} />
           </button>
           {user && (
             <button
               onClick={handleLogout}
-              className="px-4 py-2 hover:bg-red-50 text-red-600 rounded-xl transition-all font-medium flex items-center gap-2 border border-transparent hover:border-red-100"
+              className="px-3 py-1.5 md:px-4 md:py-2 hover:bg-red-50 text-red-600 rounded-xl transition-all font-medium flex items-center gap-1.5 md:gap-2 text-sm md:text-base border border-transparent hover:border-red-100"
             >
-              <LogOut size={18} />
-              <span>התנתקות</span>
+              <LogOut size={16} />
+              <span className="hidden xs:inline">התנתקות</span>
             </button>
           )}
         </div>
       </header>
 
-      <main>
+      <main className="max-w-6xl mx-auto">
         {!user && !isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-[var(--surface-variant)] shadow-sm">
-            <h2 className="text-2xl font-bold mb-4">נדרשת התחברות</h2>
-            <p className="text-[var(--secondary)] mb-8 max-w-md text-center">
+          <div className="flex flex-col items-center justify-center py-16 md:py-20 px-4 bg-white rounded-3xl border border-dashed border-[var(--surface-variant)] shadow-sm">
+            <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4 text-center">נדרשת התחברות</h2>
+            <p className="text-sm md:text-base text-[var(--secondary)] mb-8 max-w-sm text-center">
               על מנת לשמור את נתוני המטופלים בבטחה, יש להתחבר למערכת.
             </p>
             <button
               onClick={handleLogin}
-              className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-all font-semibold shadow-sm"
+              className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-semibold shadow-sm text-sm md:text-base active:scale-95"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24">
+              <svg width="18" height="18" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05" />
@@ -155,11 +155,11 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">מטופלים</h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <h2 className="text-xl md:text-2xl font-bold">מטופלים ({filteredPatients.length})</h2>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="primary-button flex items-center gap-2"
+                className="primary-button w-full sm:w-auto flex items-center justify-center gap-2 py-3 px-6 shadow-lg shadow-[var(--primary)]/20"
               >
                 <UserPlus size={18} />
                 מטופל חדש
@@ -167,13 +167,13 @@ export default function Dashboard() {
             </div>
 
             <div className="relative mb-8">
-              <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--outline)]" size={20} />
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--outline)]" size={18} />
               <input
                 type="text"
-                placeholder="חיפוש מטופל..."
+                placeholder="חיפוש מטופל ברשימה..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[var(--surface)] border border-[var(--surface-variant)] rounded-2xl py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all"
+                className="w-full bg-white border border-[var(--surface-variant)] rounded-2xl py-3.5 pr-11 pl-4 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] shadow-sm transition-all text-sm md:text-base"
               />
             </div>
 
@@ -182,42 +182,44 @@ export default function Dashboard() {
                 <div className="w-8 h-8 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {filteredPatients.map((patient) => (
                   <Link href={`/patients/${patient.id}`} key={patient.id}>
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
+                      whileHover={{ y: -4 }}
+                      whileTap={{ scale: 0.98 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="glass-card p-6 cursor-pointer hover:border-[var(--primary)] transition-colors group"
+                      className="glass-card p-5 md:p-6 cursor-pointer border border-transparent hover:border-[var(--primary)]/30 transition-all group h-full flex flex-col"
                     >
                       <div className="flex items-start justify-between mb-4">
-                        <div className="w-12 h-12 bg-[var(--primary-container)] text-[var(--primary)] rounded-2xl flex items-center justify-center font-bold text-lg">
+                        <div className="w-12 h-12 bg-[var(--primary-container)] text-[var(--primary)] rounded-2xl flex items-center justify-center font-bold text-lg shadow-inner">
                           {patient.first_name[0]}
                         </div>
-                        {/* <span className="text-xs bg-[var(--surface-variant)] px-2 py-1 rounded-full text-[var(--secondary)]">
-                      טיפול אחרון: {i === 1 ? 'אתמול' : 'לפני יומיים'}
-                    </span> */}
                       </div>
                       <h3 className="text-lg font-bold group-hover:text-[var(--primary)] transition-colors">
                         {patient.first_name} {patient.last_name}
                       </h3>
-                      <p className="text-sm text-[var(--secondary)] mt-1 line-clamp-2">
-                        {patient.notes || "אין הערות נוספות"}
+                      <p className="text-sm text-[var(--outline)] mt-2 line-clamp-2 flex-1">
+                        {patient.notes || "אין הערות קליניות רשומות"}
                       </p>
 
-                      <div className="mt-6 flex justify-between items-center">
-                        <div className="flex -space-x-2 space-x-reverse">
-                          <div className="w-8 h-8 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-[10px]">🎨</div>
-                          {/* <div className="w-8 h-8 rounded-full border-2 border-white bg-green-100 flex items-center justify-center text-[10px]">🎵</div> */}
+                      <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center transition-opacity flex-shrink-0">
+                        <div className="flex items-center gap-1.5 text-xs text-[var(--secondary)]">
+                          <div className="w-2 h-2 rounded-full bg-[var(--secondary)] animate-pulse" />
+                          פעיל
                         </div>
-                        <button className="text-[var(--primary)] text-sm font-semibold">צפייה בתיק ←</button>
+                        <span className="text-[var(--primary)] text-sm font-bold flex items-center gap-1">
+                          צפייה
+                          <span className="text-lg">←</span>
+                        </span>
                       </div>
                     </motion.div>
                   </Link>
                 ))}
                 {filteredPatients.length === 0 && !isLoading && (
-                  <div className="col-span-full py-20 text-center text-[var(--secondary)] border-2 border-dashed border-[var(--surface-variant)] rounded-3xl">
-                    לא נמצאו מטופלים
+                  <div className="col-span-full py-16 text-center text-[var(--outline)] border-2 border-dashed border-[var(--surface-variant)] rounded-3xl bg-white/50">
+                    לא נמצאו מטופלים העונים לחיפוש
                   </div>
                 )}
               </div>

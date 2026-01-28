@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, User, Calendar, FileText, Save } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -8,44 +8,60 @@ interface AddPatientModalProps {
     isOpen: boolean;
     onClose: () => void;
     onAdd: (patient: any) => void;
+    initialData?: any;
+    title?: string;
 }
 
-export default function AddPatientModal({ isOpen, onClose, onAdd }: AddPatientModalProps) {
+export default function AddPatientModal({ isOpen, onClose, onAdd, initialData, title }: AddPatientModalProps) {
     const [formData, setFormData] = useState({
-        first_name: "",
-        last_name: "",
-        birth_date: "",
-        notes: "",
+        first_name: initialData?.first_name || "",
+        last_name: initialData?.last_name || "",
+        birth_date: initialData?.birth_date || "",
+        notes: initialData?.notes || "",
     });
+
+    // Reset form when initialData changes or modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setFormData({
+                first_name: initialData?.first_name || "",
+                last_name: initialData?.last_name || "",
+                birth_date: initialData?.birth_date || "",
+                notes: initialData?.notes || "",
+            });
+        }
+    }, [initialData, isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onAdd(formData);
-        setFormData({ first_name: "", last_name: "", birth_date: "", notes: "" });
+        if (!initialData) {
+            setFormData({ first_name: "", last_name: "", birth_date: "", notes: "" });
+        }
         onClose();
     };
 
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
                     />
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden"
+                        className="relative w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden mt-auto sm:mt-0 max-h-[90vh] overflow-y-auto"
                     >
                         <div className="p-6 border-b border-[var(--surface-variant)] flex justify-between items-center">
                             <h2 className="text-xl font-bold flex items-center gap-2">
                                 <User className="text-[var(--primary)]" size={20} />
-                                מטופל חדש
+                                {title || (initialData ? "עריכת פרטי מטופל" : "מטופל חדש")}
                             </h2>
                             <button onClick={onClose} className="p-2 hover:bg-[var(--surface-variant)] rounded-full transition-colors">
                                 <X size={20} />
@@ -103,9 +119,9 @@ export default function AddPatientModal({ isOpen, onClose, onAdd }: AddPatientMo
                                 />
                             </div>
 
-                            <button type="submit" className="w-full primary-button flex items-center justify-center gap-2 mt-4">
+                            <button type="submit" className="w-full primary-button flex items-center justify-center gap-2 mt-4 shadow-lg shadow-[var(--primary)]/20">
                                 <Save size={18} />
-                                שמירת פרטי מטופל
+                                {initialData ? "שמירת שינויים" : "שמירת פרטי מטופל"}
                             </button>
                         </form>
                     </motion.div>
