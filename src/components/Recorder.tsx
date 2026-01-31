@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Mic, Square, Trash2, Check, RefreshCw } from "lucide-react";
+import { Mic, Square, Trash2, Check, RefreshCw, Edit3 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface RecorderProps {
@@ -95,6 +95,23 @@ export default function Recorder({ onSave, onCancel }: RecorderProps) {
                 <h3 className="text-2xl font-mono font-bold">{formatTime(recordingTime)}</h3>
                 <p className="text-[var(--secondary)] mt-1">
                     {isRecording ? 'מקליט סיכום טיפול...' : audioBlob ? 'ההקלטה מוכנה' : 'לחצי להתחלת הקלטה'}
+                </p>
+            </div>
+
+            <div className="w-full bg-[var(--primary-container)]/30 rounded-2xl p-4 border border-[var(--primary-container)]/50">
+                <h4 className="font-bold text-[var(--primary)] mb-3 text-sm flex items-center gap-2">
+                    <Edit3 size={14} />
+                    מה לכלול בהקלטה?
+                </h4>
+                <ul className="text-xs space-y-2 text-[var(--text-secondary)] leading-relaxed list-decimal list-inside">
+                    <li><span className="font-semibold">מטרת המפגש:</span> מה ניסינו להשיג היום.</li>
+                    <li><span className="font-semibold">תכנים מרכזיים:</span> נושאים שעלו בשיחה או ביצירה.</li>
+                    <li><span className="font-semibold">תהליכים רגשיים ויצירתיים:</span> תגובה לחומרים והתהליך.</li>
+                    <li><span className="font-semibold">התרשמות מקצועית:</span> תובנות שלך כמטפלת.</li>
+                    <li><span className="font-semibold">כיווני המשך:</span> נקודות למחשבה למפגש הבא.</li>
+                </ul>
+                <p className="mt-3 text-[10px] text-[var(--outline)] italic">
+                    * דברי בצורה חופשית ונינוחה, ה-AI כבר יסדר הכל במקומך.
                 </p>
             </div>
 
