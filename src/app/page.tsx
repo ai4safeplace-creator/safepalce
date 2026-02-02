@@ -16,42 +16,86 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Define a robust session check function
-    const verifySession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-        await ensureTherapistRecord(session.user);
-        await fetchPatients();
-      } else {
-        // Only set loading to false if we are sure there is no session
-        setIsLoading(false);
+    let isMounted = true;
+    let authInitialized = false;
+
+    const handleAuth = async (session: any) => {
+      if (!isMounted) return;
+
+      try {
+        if (session?.user) {
+          // Use getUser to verify the session with the server
+          const { data: { user: verifiedUser }, error } = await supabase.auth.getUser();
+
+          if (error || !verifiedUser) {
+            console.warn("Session verification failed or expired:", error);
+            if (isMounted) {
+              setUser(null);
+              setIsLoading(false);
+            }
+            return;
+          }
+
+          if (isMounted) {
+            setUser(verifiedUser);
+            // Sequence these to ensure data is ready
+            await ensureTherapistRecord(verifiedUser);
+            await fetchPatients();
+          }
+        } else {
+          if (isMounted) {
+            setUser(null);
+            setPatients([]);
+            setIsLoading(false);
+          }
+        }
+      } catch (err) {
+        console.error("Critical error in auth handler:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
 
-    // 1. Initial check on mount
-    verifySession();
-
-    // 2. Listen for auth state changes (essential for OAuth redirects and token refreshes)
+    // 1. Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth event:", event, session?.user?.email);
 
-      if (session?.user) {
-        setUser(session.user);
-        await ensureTherapistRecord(session.user);
-        await fetchPatients();
-      } else if (event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
-        setUser(null);
-        setPatients([]);
-        setIsLoading(false);
+      // If INITIAL_SESSION happens, we mark initialized
+      if (event === 'INITIAL_SESSION') {
+        authInitialized = true;
+      }
+
+      // Handle login/logout/token refresh
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        await handleAuth(session);
+      } else if (event === 'SIGNED_OUT') {
+        if (isMounted) {
+          setUser(null);
+          setPatients([]);
+          setIsLoading(false);
+        }
       }
     });
 
+    // 2. Safety fallback: if after 3 seconds INITIAL_SESSION hasn't fired, trigger manual check
+    const fallbackTimer = setTimeout(() => {
+      if (!authInitialized && isMounted && isLoading) {
+        console.warn("Auth initialization timed out - attempting fallback check");
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (isMounted && !authInitialized) {
+            handleAuth(session);
+          }
+        });
+      }
+    }, 3000);
+
     // 3. Proactive recovery - check session when user returns to the tab
     const handleActivity = () => {
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState === 'visible' && !isLoading) {
         console.log("App returned to foreground - verifying session...");
-        verifySession();
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (isMounted) handleAuth(session);
+        });
       }
     };
 
@@ -59,6 +103,8 @@ export default function Dashboard() {
     window.addEventListener('visibilitychange', handleActivity);
 
     return () => {
+      isMounted = false;
+      clearTimeout(fallbackTimer);
       subscription.unsubscribe();
       window.removeEventListener('focus', handleActivity);
       window.removeEventListener('visibilitychange', handleActivity);

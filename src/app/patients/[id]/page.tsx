@@ -26,12 +26,21 @@ export default function PatientDetail() {
     useEffect(() => {
         if (!id) return;
 
-        // Initial fetch
+        let isMounted = true;
+
+        // 1. Initial fetch and auth check
         fetchPatientData();
 
-        // Refetch on focus to ensure session is refreshed and data is up to date
+        // 2. Listen for auth changes (e.g. sign out in another tab)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT' && isMounted) {
+                router.push('/');
+            }
+        });
+
+        // 3. Refetch on focus to ensure session is refreshed and data is up to date
         const handleActivity = () => {
-            if (document.visibilityState === 'visible') {
+            if (document.visibilityState === 'visible' && !isLoading) {
                 console.log("Patient detail focused - verifying session/data");
                 fetchPatientData();
             }
@@ -41,6 +50,8 @@ export default function PatientDetail() {
         window.addEventListener('visibilitychange', handleActivity);
 
         return () => {
+            isMounted = false;
+            subscription.unsubscribe();
             window.removeEventListener('focus', handleActivity);
             window.removeEventListener('visibilitychange', handleActivity);
         };
@@ -48,12 +59,12 @@ export default function PatientDetail() {
 
     const fetchPatientData = async () => {
         try {
-            // Use getSession first as it's faster and works better with transient network states
-            const { data: { session } } = await supabase.auth.getSession();
+            // Use getUser to verify the session with the server
+            const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-            if (!session) {
-                console.log("No session found, redirecting to login...");
-                window.location.href = "/";
+            if (authError || !user) {
+                console.log("No valid session found, redirecting to login...");
+                router.push('/');
                 return;
             }
 
