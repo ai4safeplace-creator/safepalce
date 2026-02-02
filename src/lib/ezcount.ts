@@ -57,7 +57,9 @@ export async function createEZcountDoc(data: Partial<EZcountDocRequest>): Promis
     ...data,
   };
 
-  const response = await fetch("https://api.ezcount.co.il/api/createDoc", {
+  // Call our internal API proxy instead of calling EZcount directly from the browser
+  // to avoid CORS issues and mobile browser restrictions.
+  const response = await fetch("/api/ezcount", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
