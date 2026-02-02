@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
     FileText,
@@ -18,13 +18,39 @@ import Link from "next/link";
 import { createEZcountDoc } from "@/lib/ezcount";
 
 export default function ProformaInvoicePage() {
-    const searchParams = useSearchParams();
-    const initialCustomer = searchParams.get("customer") || "";
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+                <div className="w-10 h-10 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
+            </div>
+        }>
+            <InvoiceFormContent />
+        </Suspense>
+    );
+}
 
+function InvoiceFormContent() {
+    const searchParams = useSearchParams();
     const [step, setStep] = useState<"form" | "preview">("form");
-    const [customerName, setCustomerName] = useState(initialCustomer);
+    const [customerName, setCustomerName] = useState("");
     const [customerEmail, setCustomerEmail] = useState("");
     const [description, setDescription] = useState("");
+    const [currentDate, setCurrentDate] = useState("");
+    const [deadlineDate, setDeadlineDate] = useState("");
+
+    // Set dates and initial customer on client only
+    useEffect(() => {
+        const nameFromUrl = searchParams.get("customer") || "";
+        if (nameFromUrl) setCustomerName(nameFromUrl);
+
+        const now = new Date();
+        setCurrentDate(now.toLocaleDateString('he-IL'));
+
+        const deadline = new Date();
+        deadline.setDate(deadline.getDate() + 14);
+        setDeadlineDate(deadline.toLocaleDateString('he-IL'));
+    }, [searchParams]);
+
     const [items, setItems] = useState<any[]>([
         { details: "מספר טיפולים", amount: 0, price: 180, comment: "", type: "regular" },
         { details: "מספר ביטולים", amount: 0, price: 90, comment: "", type: "regular" },
@@ -101,11 +127,7 @@ export default function ProformaInvoicePage() {
                 return;
             }
 
-            const paymentDeadline = new Date();
-            paymentDeadline.setDate(paymentDeadline.getDate() + 14);
-            const deadlineDateString = paymentDeadline.toLocaleDateString('he-IL');
-
-            const paymentNote = `פרטי ח-ן:\nבנק מזרחי, סניף 532 פארק המדע\nמס' ח-ן 117789\nמיטל ואלעד כרמל קליפשוט\n\nלתשלום עד: ${deadlineDateString}`;
+            const paymentNote = `פרטי ח-ן:\nבנק מזרחי, סניף 532 פארק המדע\nמס' ח-ן 117789\nמיטל ואלעד כרמל קליפשוט\n\nלתשלום עד: ${deadlineDate}`;
 
             const res = await createEZcountDoc({
                 customer_name: customerName,
@@ -230,7 +252,7 @@ export default function ProformaInvoicePage() {
                                 </div>
                                 <div className="text-left">
                                     <p className="text-[10px] font-black text-[var(--primary)] uppercase tracking-wider mb-2">תאריך המסמך:</p>
-                                    <p className="font-bold text-[var(--text-primary)]">{new Date().toLocaleDateString('he-IL')}</p>
+                                    <p className="font-bold text-[var(--text-primary)]">{currentDate}</p>
                                     {description && (
                                         <div className="mt-4">
                                             <p className="text-[10px] font-black text-[var(--primary)] uppercase tracking-wider mb-1">תיאור נוסף:</p>
@@ -504,7 +526,7 @@ export default function ProformaInvoicePage() {
                                 <p>מס' ח-ן 117789</p>
                                 <p>מיטל ואלעד כרמל קליפשוט</p>
                                 <p className="mt-3 pt-2 border-t border-[var(--primary)]/10 font-bold text-[var(--text-primary)]">
-                                    לתשלום עד: {new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString('he-IL')}
+                                    לתשלום עד: {deadlineDate}
                                 </p>
                             </div>
                         </div>
