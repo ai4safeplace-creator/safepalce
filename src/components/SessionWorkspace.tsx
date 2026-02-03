@@ -34,18 +34,18 @@ export default function SessionWorkspace({ transcript, summary: initialSummary, 
     }, [initialSummary]);
 
     return (
-        <div className="flex flex-col lg:flex-row gap-6 md:gap-8 w-full max-w-6xl mx-auto p-2 md:p-4 pb-12">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full max-w-6xl mx-auto p-2 md:p-4 pb-12">
             {/* Transcript Column */}
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex-1 glass-card p-5 md:p-6 flex flex-col min-h-[300px] lg:min-h-0"
+                className="flex-1 glass-card p-5 md:p-6 flex flex-col min-h-[250px] md:min-h-0"
             >
                 <div className="flex items-center gap-2 mb-4 text-[var(--text-secondary)]">
                     <FileText size={18} />
                     <h3 className="font-bold text-base md:text-lg">תמליל גולמי (STT)</h3>
                 </div>
-                <div className="flex-1 bg-[var(--background)] rounded-2xl p-4 overflow-y-auto max-h-[300px] lg:max-h-[500px] border border-[var(--surface-variant)] text-sm leading-relaxed whitespace-pre-wrap text-[var(--text-secondary)]">
+                <div className="flex-1 bg-[var(--background)] rounded-2xl p-4 overflow-y-auto max-h-[250px] md:max-h-[500px] border border-[var(--surface-variant)] text-sm leading-relaxed whitespace-pre-wrap text-[var(--text-secondary)]">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center h-40 gap-4">
                             <div className="w-8 h-8 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin" />
@@ -98,12 +98,12 @@ export default function SessionWorkspace({ transcript, summary: initialSummary, 
                         <textarea
                             value={editedSummary}
                             onChange={(e) => setEditedSummary(e.target.value)}
-                            className="flex-1 w-full bg-[var(--background)] text-[var(--text-primary)] rounded-2xl p-4 border-2 border-[var(--primary-container)] focus:border-[var(--primary)] focus:outline-none text-base leading-relaxed min-h-[350px] lg:min-h-[450px] shadow-inner"
+                            className="flex-1 w-full bg-[var(--background)] text-[var(--text-primary)] rounded-2xl p-4 border-2 border-[var(--primary-container)] focus:border-[var(--primary)] focus:outline-none text-base leading-relaxed min-h-[300px] md:min-h-[450px] shadow-inner"
                             dir="rtl"
                             placeholder="ערכי כאן את הסיכום..."
                         />
                     ) : (
-                        <div className="flex-1 bg-[var(--primary-container)]/20 rounded-2xl p-6 overflow-y-auto max-h-[400px] lg:max-h-[500px] border border-[var(--primary-container)]/30 text-base leading-relaxed whitespace-pre-wrap text-[var(--text-primary)] font-medium">
+                        <div className="flex-1 bg-[var(--primary-container)]/20 rounded-2xl p-6 overflow-y-auto max-h-[350px] md:max-h-[500px] border border-[var(--primary-container)]/30 text-base leading-relaxed whitespace-pre-wrap text-[var(--text-primary)] font-medium">
                             {editedSummary || "לאחר התמלול, הבינה המלאכותית תנסח כאן סיכום טיפולי מקצועי..."}
                         </div>
                     )}

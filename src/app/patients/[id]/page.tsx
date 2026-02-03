@@ -55,7 +55,7 @@ export default function PatientDetail() {
                     console.log("DEBUG: No session, checking getUser...");
                     const { data: { user }, error: userError } = await supabase.auth.getUser();
                     console.log("DEBUG: getUser result:", { hasUser: !!user, error: userError });
-                    
+
                     if (user) {
                         console.log("DEBUG: User found via getUser, fetching patient data");
                         await fetchPatientData();
@@ -93,7 +93,7 @@ export default function PatientDetail() {
             subscription.unsubscribe();
         };
     }, [id]);
-//workssד
+    //workssד
     const fetchPatientData = async () => {
         console.log("DEBUG: fetchPatientData started for id:", id);
         try {
@@ -248,9 +248,9 @@ export default function PatientDetail() {
             </header>
 
             <main className="max-w-4xl mx-auto">
-                <div className="glass-card p-6 md:p-10 mb-10 flex flex-col md:flex-row gap-8 md:gap-10 items-center md:items-start text-center md:text-right relative overflow-hidden">
+                <div className="glass-card p-4 md:p-10 mb-8 md:mb-10 flex flex-col md:flex-row gap-6 md:gap-10 items-center md:items-start text-center md:text-right relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-[var(--primary)] to-[var(--accent)]" />
-                    
+
                     <div className="w-24 h-24 md:w-32 md:h-32 bg-[var(--primary-container)] text-[var(--primary)] rounded-[40px] flex items-center justify-center font-black text-4xl md:text-5xl shadow-inner">
                         {patient.first_name[0]}
                     </div>
@@ -264,6 +264,19 @@ export default function PatientDetail() {
                         <p className="mt-6 text-[var(--text-secondary)] text-base md:text-lg leading-relaxed max-w-2xl font-medium">
                             {patient.notes || "אין הערות קליניות רשומות למטופל זה."}
                         </p>
+
+                        <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-[var(--primary-container)]/50 text-[var(--primary)] rounded-xl text-sm font-bold shadow-sm">
+                            <Calendar size={16} />
+                            <span>
+                                {new Date().toLocaleDateString('he-IL', { month: 'long' })}: {
+                                    sessions.filter(s => {
+                                        const d = new Date(s.session_date);
+                                        const now = new Date();
+                                        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                                    }).length
+                                } מפגשים
+                            </span>
+                        </div>
                     </div>
                     <button
                         onClick={() => setIsRecordingSession(true)}
@@ -311,7 +324,7 @@ export default function PatientDetail() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 text-[var(--primary)] opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
+                                <div className="flex items-center gap-2 text-[var(--primary)] opacity-100 md:opacity-0 group-hover:opacity-100 transition-all transform translate-x-0 md:translate-x-4 md:group-hover:translate-x-0">
                                     <span className="text-sm font-black hidden sm:inline">צפייה</span>
                                     <ChevronLeft size={20} />
                                 </div>

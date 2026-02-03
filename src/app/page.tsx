@@ -1,12 +1,12 @@
 "use client";
 
-import { Search, UserPlus, LogOut, Settings, FileText, Sparkles } from "lucide-react";
+import { Search, UserPlus, LogOut, Settings, FileText, Sparkles, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import AddPatientModal from "@/components/AddPatientModal";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { getPatients, createPatient, Patient } from "@/lib/patients";
+import { getPatients, createPatient, Patient, getMonthStats } from "@/lib/patients";
 
 export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,6 +17,7 @@ export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   const isFetchingRef = useRef(false);
   const [authInitialized, setAuthInitialized] = useState(false);
+  const [monthStats, setMonthStats] = useState<{ totalSessions: number, uniquePatients: number, workdays: number } | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -32,6 +33,13 @@ export default function Dashboard() {
       ensureTherapistRecord(currentUser).catch(err => console.error("Therapist record error:", err));
       const data = await getPatients();
       setPatients(data);
+
+      try {
+        const stats = await getMonthStats();
+        setMonthStats(stats);
+      } catch (err) {
+        console.error("Failed to fetch month stats:", err);
+      }
     } catch (err) {
       console.error("Failed to load app data:", err);
       if ((err as any).code === '42501' || (err as any).status === 401) {
@@ -161,7 +169,7 @@ export default function Dashboard() {
             <p className="text-xs font-semibold text-[var(--primary)] opacity-80">סטודיו לטיפול באומנות</p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2 md:gap-3">
           <Link
             href="/invoice-proforma"
@@ -170,7 +178,7 @@ export default function Dashboard() {
             <FileText size={18} />
             <span className="hidden sm:inline">חשבונית</span>
           </Link>
-          
+
           {user && (
             <button
               onClick={handleLogout}
@@ -180,7 +188,7 @@ export default function Dashboard() {
               <LogOut size={20} />
             </button>
           )}
-          
+
           <button className="p-2.5 hover:bg-[var(--surface-variant)] rounded-2xl transition-all text-[var(--outline)]">
             <Settings size={20} />
           </button>
@@ -194,7 +202,7 @@ export default function Dashboard() {
             <p className="text-[var(--text-secondary)] font-bold text-lg animate-pulse">יוצרים מרחב טיפולי...</p>
           </div>
         ) : !user ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center py-20 px-6 glass-card text-center max-w-2xl mx-auto"
@@ -204,7 +212,7 @@ export default function Dashboard() {
             </div>
             <h2 className="text-3xl font-black mb-4 text-[var(--text-primary)]">ברוכה הבאה למיטלוג</h2>
             <p className="text-lg text-[var(--text-secondary)] mb-10 leading-relaxed">
-              המרחב הדיגיטלי שלך לניהול ותיעוד טיפולים באומנות. <br/>
+              המרחב הדיגיטלי שלך לניהול ותיעוד טיפולים באומנות. <br />
               <span className="text-[var(--primary)] font-bold italic">מוקדש לך באהבה ❤️</span>
             </p>
             <button
@@ -236,6 +244,37 @@ export default function Dashboard() {
               </button>
             </div>
 
+            {monthStats && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10"
+              >
+                <div className="glass-card p-5 border-r-4 border-r-[var(--primary)] flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-[var(--text-secondary)] mb-1">החודש היו:</p>
+                    <p className="text-lg font-black text-[var(--text-primary)]">
+                      {monthStats.totalSessions} טיפולים עבור {monthStats.uniquePatients} מטופלים
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-[var(--primary-container)] rounded-2xl flex items-center justify-center text-[var(--primary)]">
+                    <FileText size={24} />
+                  </div>
+                </div>
+                <div className="glass-card p-5 border-r-4 border-r-[var(--accent)] flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-[var(--text-secondary)] mb-1">ימי עבודה:</p>
+                    <p className="text-lg font-black text-[var(--text-primary)]">
+                      {monthStats.workdays} ימים בהם בוצעו סיכומי טיפול
+                    </p>
+                  </div>
+                  <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-2xl flex items-center justify-center text-[var(--accent)]">
+                    <Calendar size={24} />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             <div className="relative mb-12 group">
               <Search className="absolute right-5 top-1/2 -translate-y-1/2 text-[var(--outline)] group-focus-within:text-[var(--primary)] transition-colors" size={20} />
               <input
@@ -243,7 +282,7 @@ export default function Dashboard() {
                 placeholder="חיפוש מטופל לפי שם..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[var(--surface)] text-[var(--text-primary)] border-2 border-transparent rounded-3xl py-5 pr-14 pl-6 focus:outline-none focus:border-[var(--primary)]/20 shadow-xl shadow-black/[0.02] transition-all text-lg font-medium"
+                className="w-full bg-[var(--surface)] text-[var(--text-primary)] border-2 border-transparent rounded-3xl py-4 md:py-5 pr-14 pl-6 focus:outline-none focus:border-[var(--primary)]/20 shadow-xl shadow-black/[0.02] transition-all text-lg font-medium"
               />
             </div>
 
@@ -263,7 +302,7 @@ export default function Dashboard() {
                       className="glass-card p-6 md:p-8 cursor-pointer group h-full flex flex-col relative overflow-hidden"
                     >
                       <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-[var(--primary)] to-[var(--accent)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                      
+
                       <div className="flex items-center gap-4 mb-6">
                         <div className="w-14 h-14 bg-[var(--primary-container)] text-[var(--primary)] rounded-2xl flex items-center justify-center font-black text-xl shadow-inner">
                           {patient.first_name[0]}
@@ -278,7 +317,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <p className="text-[var(--text-secondary)] leading-relaxed line-clamp-3 flex-1 font-medium">
                         {patient.notes || "אין הערות קליניות רשומות עדיין..."}
                       </p>
@@ -292,7 +331,7 @@ export default function Dashboard() {
                     </motion.div>
                   </Link>
                 ))}
-                
+
                 {filteredPatients.length === 0 && !isLoading && (
                   <div className="col-span-full py-24 text-center glass-card border-dashed border-2">
                     <div className="w-16 h-16 bg-[var(--surface-variant)] rounded-full flex items-center justify-center mx-auto mb-4 text-[var(--outline)]">

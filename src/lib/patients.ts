@@ -97,3 +97,25 @@ export async function deleteSession(id: string) {
 
     if (error) throw error;
 }
+
+export async function getMonthStats() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+    const { data: sessions, error } = await supabase
+        .from('sessions')
+        .select('session_date, patient_id')
+        .gte('session_date', startOfMonth);
+
+    if (error) throw error;
+
+    const totalSessions = sessions.length;
+    const uniquePatients = new Set(sessions.map(s => s.patient_id)).size;
+    const workdays = new Set(sessions.map(s => new Date(s.session_date).toLocaleDateString())).size;
+
+    return {
+        totalSessions,
+        uniquePatients,
+        workdays
+    };
+}

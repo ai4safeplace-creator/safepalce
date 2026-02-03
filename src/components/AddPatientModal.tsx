@@ -69,7 +69,7 @@ export default function AddPatientModal({ isOpen, onClose, onAdd, initialData, t
                         </div>
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-6 bg-[var(--surface)]">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-[var(--text-secondary)] mr-1">שם פרטי</label>
                                     <input
