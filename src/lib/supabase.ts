@@ -10,5 +10,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
         detectSessionInUrl: true,
         storageKey: 'meytalog-auth-token',
         flowType: 'pkce',
+        debug: process.env.NODE_ENV === 'development',
     }
 });
+
