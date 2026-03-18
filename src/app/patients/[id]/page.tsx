@@ -99,7 +99,7 @@ export default function PatientDetail() {
             subscription.unsubscribe();
         };
     }, [id]);
-    //workssדs
+    //workssד
     const fetchPatientData = async () => {
         console.log("DEBUG: fetchPatientData started for id:", id);
         try {
@@ -432,15 +432,15 @@ export default function PatientDetail() {
                                             }
                                         }}
                                         className={`glass-card p-5 md:p-6 flex items-center justify-between cursor-pointer group relative overflow-hidden transition-all ${isMergeMode && selectedForMerge.includes(session.id)
-                                                ? 'border-[var(--primary)] bg-[var(--primary-container)]/20 ring-2 ring-[var(--primary)]/20'
-                                                : 'border-transparent hover:border-[var(--primary)]/20'
+                                            ? 'border-[var(--primary)] bg-[var(--primary-container)]/20 ring-2 ring-[var(--primary)]/20'
+                                            : 'border-transparent hover:border-[var(--primary)]/20'
                                             }`}
                                         whileHover={!isMergeMode ? { x: -4 } : {}}
                                     >
                                         {isMergeMode && (
                                             <div className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center transition-all ${selectedForMerge.includes(session.id)
-                                                    ? 'bg-[var(--primary)] border-[var(--primary)] text-white'
-                                                    : 'border-slate-300 bg-white'
+                                                ? 'bg-[var(--primary)] border-[var(--primary)] text-white'
+                                                : 'border-slate-300 bg-white'
                                                 }`}>
                                                 {selectedForMerge.includes(session.id) && <Check size={14} />}
                                             </div>
