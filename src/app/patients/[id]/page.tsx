@@ -27,6 +27,7 @@ export default function PatientDetail() {
     const [isMergeMode, setIsMergeMode] = useState(false);
     const [selectedForMerge, setSelectedForMerge] = useState<string[]>([]);
     const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
+    const [isShowRawTranscript, setIsShowRawTranscript] = useState(false);
 
     const isFetchingRef = useRef(false);
 
@@ -121,7 +122,7 @@ export default function PatientDetail() {
                     id,
                     session_date,
                     parent_session_id,
-                    summaries (summary_text, summary_brief),
+                    summaries (summary_text, summary_brief, raw_transcript),
                     transcripts (raw_text)
                 `)
                 .eq('patient_id', id)
@@ -606,6 +607,7 @@ export default function PatientDetail() {
                                     onClick={() => {
                                         setSelectedSession(null);
                                         setIsEditingSummary(false);
+                                        setIsShowRawTranscript(false);
                                     }}
                                     className="absolute inset-0 bg-black/20 backdrop-blur-sm"
                                 />
@@ -702,11 +704,54 @@ export default function PatientDetail() {
                                                 autoFocus
                                             />
                                         ) : (
-                                            <div className="bg-[var(--surface)] rounded-3xl p-6 md:p-8 border border-[var(--surface-variant)] shadow-sm min-h-[200px]">
-                                                <div className="whitespace-pre-wrap text-base md:text-lg leading-relaxed text-[var(--text-primary)] font-medium">
-                                                    {selectedSession.summaries?.[0]?.summary_text || "אין סיכום זמין למפגש זה."}
+                                            <>
+                                                <div className="bg-[var(--surface)] rounded-3xl p-6 md:p-8 border border-[var(--surface-variant)] shadow-sm min-h-[200px]">
+                                                    <div className="whitespace-pre-wrap text-base md:text-lg leading-relaxed text-[var(--text-primary)] font-medium">
+                                                        {selectedSession.summaries?.[0]?.summary_text || "אין סיכום זמין למפגש זה."}
+                                                    </div>
                                                 </div>
-                                            </div>
+
+                                                {selectedSession.summaries?.[0]?.raw_transcript && (
+                                                    <div className="mt-8 border-t border-[var(--surface-variant)] pt-8">
+                                                        <button 
+                                                            onClick={() => setIsShowRawTranscript(!isShowRawTranscript)}
+                                                            className="flex items-center gap-2 text-[var(--primary)] font-bold mb-4 hover:opacity-80 transition-all"
+                                                        >
+                                                            <div className={`p-1 rounded bg-[var(--primary-container)] transition-transform ${isShowRawTranscript ? 'rotate-180' : ''}`}>
+                                                                <ChevronLeft size={14} className="rotate-270" />
+                                                            </div>
+                                                            {isShowRawTranscript ? 'הסתר תמלול גלם' : 'הצג תמלול גלם'}
+                                                        </button>
+                                                        
+                                                        <AnimatePresence>
+                                                            {isShowRawTranscript && (
+                                                                <motion.div
+                                                                    initial={{ height: 0, opacity: 0 }}
+                                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                                    exit={{ height: 0, opacity: 0 }}
+                                                                    className="overflow-hidden"
+                                                                >
+                                                                    <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200 relative">
+                                                                        <div className="flex justify-between items-center mb-3">
+                                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">תמלול גלם (ללא עריכה)</span>
+                                                                            <button
+                                                                                onClick={() => handleCopySummary(selectedSession.summaries[0].raw_transcript)}
+                                                                                className="text-slate-400 hover:text-[var(--primary)] transition-colors"
+                                                                                title="העתק תמלול גלם"
+                                                                            >
+                                                                                <Copy size={16} />
+                                                                            </button>
+                                                                        </div>
+                                                                        <div className="text-sm md:text-base leading-relaxed text-slate-600 whitespace-pre-wrap italic">
+                                                                            {selectedSession.summaries[0].raw_transcript}
+                                                                        </div>
+                                                                    </div>
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                     <div className="p-6 border-t border-[var(--surface-variant)] flex justify-between items-center bg-[var(--surface)]">

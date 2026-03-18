@@ -12,6 +12,7 @@ export interface Patient {
     last_session_date?: string;
     last_summary?: string;
     last_summary_brief?: string;
+    last_raw_transcript?: string;
 }
 
 export async function getPatients() {
@@ -24,7 +25,8 @@ export async function getPatients() {
                 session_date,
                 summaries (
                     summary_text,
-                    summary_brief
+                    summary_brief,
+                    raw_transcript
                 )
             )
         `)
@@ -41,13 +43,15 @@ export async function getPatients() {
         const lastSession = sortedSessions[0];
         const lastSummary = lastSession?.summaries?.[0]?.summary_text;
         const lastSummaryBrief = lastSession?.summaries?.[0]?.summary_brief;
+        const lastRawTranscript = lastSession?.summaries?.[0]?.raw_transcript;
 
         return {
             ...p,
             session_count: sortedSessions.length,
             last_session_date: lastSession?.session_date,
             last_summary: lastSummary,
-            last_summary_brief: lastSummaryBrief
+            last_summary_brief: lastSummaryBrief,
+            last_raw_transcript: lastRawTranscript
         };
     });
 
@@ -190,7 +194,7 @@ export async function getMonthStats() {
     };
 }
 
-export async function createGroupedSession(patientId: string, therapistId: string, sessionDate: string, recordings: { transcript: string }[], finalSummary: string, summaryBrief: string) {
+export async function createGroupedSession(patientId: string, therapistId: string, sessionDate: string, recordings: { transcript: string }[], finalSummary: string, summaryBrief: string, combinedRawTranscript: string) {
     // 1. Create the master session
     const { data: masterSession, error: masterError } = await supabase
         .from('sessions')
@@ -231,7 +235,8 @@ export async function createGroupedSession(patientId: string, therapistId: strin
         .insert([{
             session_id: masterSession.id,
             summary_text: finalSummary,
-            summary_brief: summaryBrief
+            summary_brief: summaryBrief,
+            raw_transcript: combinedRawTranscript
         }]);
 
     if (summaryError) throw summaryError;

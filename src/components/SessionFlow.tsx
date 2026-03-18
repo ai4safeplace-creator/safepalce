@@ -80,7 +80,8 @@ export default function SessionFlow({ patientId, onComplete, onCancel }: Session
                 sessionDate,
                 recordings,
                 finalSummary,
-                summaryBrief
+                summaryBrief,
+                recordings.map(r => r.transcript).join("\n\n")
             );
 
             onComplete();
